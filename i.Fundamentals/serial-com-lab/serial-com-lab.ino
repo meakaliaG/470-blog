@@ -1,25 +1,43 @@
+const int btnPin = 2; // digital input
+
 void setup() {
-  // start serial port at 9600 bps:
+  // start serial port at 9600 bps
   Serial.begin(9600);
+  // configure the digital input
+  pinMode(btnPin, INPUT);
+
+  establishContact();  // send data establish contact until receiver responds
 }
 
 void loop() {
-  // read analog input, map it to make the range 0-255:
-  int sensorVal = analogRead(A0);
-  int mappedVal = map(sensorVal, 0, 1023, 0, 255);
+  // if we get a valid byte, read the sensors
+  if (Serial.available() > 0) {
+    // read the incoming byte
+    int inByte = Serial.read();
   
-  // print different formats:
-  Serial.write(mappedVal); // Print the raw binary value
-  Serial.print('\t'); // print a tab
-  // print ASCII-encoded values:
-  Serial.print(mappedVal, BIN); // print ASCII-encoded binary value
-  Serial.print('\t'); // print a tab
-  Serial.print(mappedVal); // print decimal value
-  Serial.print('\t'); // print a tab
-  Serial.print(mappedVal, HEX); // print hexadecimal value
-  Serial.print('\t'); // print a tab
-  Serial.print(mappedVal, OCT); // print octal value
-  Serial.println(); // print linefeed and carriage return
+    // read the analog sensor
+    int sensorVal = analogRead(A0);
+    // print the results
+    Serial.print(sensorVal);
+    Serial.print(",");
   
-  delay(500); // 0.5 second delay so we can see the numbers better
+    // read the analog sensor
+    sensorVal = analogRead(A1);
+    // print the results
+    Serial.print(sensorVal);
+    Serial.print(",");
+    
+    // read the button state
+    sensorVal = digitalRead(btnPin);
+    // print the results:
+    Serial.println(sensorVal);
+  }
 }
+
+void establishContact() {
+  while (Serial.available() <= 0) {
+    Serial.println("0,0,0");   // send an initial string
+    delay(300);
+  }
+}
+
