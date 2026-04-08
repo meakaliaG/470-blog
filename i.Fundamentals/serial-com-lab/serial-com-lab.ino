@@ -1,43 +1,41 @@
-const int btnPin = 2; // digital input
+import processing.serial.*;
+
+Serial myPort;
+float xPos = 1;
+float yPos = 0;
 
 void setup() {
-  // start serial port at 9600 bps
-  Serial.begin(9600);
-  // configure the digital input
-  pinMode(btnPin, INPUT);
+  size(800, 400);
+  background(0);
 
-  establishContact();  // send data establish contact until receiver responds
+  // Replace with your actual serial port name:
+  String portName = Serial.list()[0];
+  myPort = new Serial(this, portName, 9600);
+  myPort.bufferUntil('\n'); // buffer until newline
 }
 
-void loop() {
-  // if we get a valid byte, read the sensors
-  if (Serial.available() > 0) {
-    // read the incoming byte
-    int inByte = Serial.read();
-  
-    // read the analog sensor
-    int sensorVal = analogRead(A0);
-    // print the results
-    Serial.print(sensorVal);
-    Serial.print(",");
-  
-    // read the analog sensor
-    sensorVal = analogRead(A1);
-    // print the results
-    Serial.print(sensorVal);
-    Serial.print(",");
-    
-    // read the button state
-    sensorVal = digitalRead(btnPin);
-    // print the results:
-    Serial.println(sensorVal);
-  }
+void draw() {
+  // drawing happens in serialEvent()
 }
 
-void establishContact() {
-  while (Serial.available() <= 0) {
-    Serial.println("0,0,0");   // send an initial string
-    delay(300);
+void serialEvent(Serial myPort) {
+  String inString = myPort.readStringUntil('\n');
+  if (inString != null) {
+    inString = inString.trim();
+    float inByte = float(inString);
+    // map 0-1023 to screen height
+    inByte = map(inByte, 0, 1023, 0, height);
+
+    stroke(0, 200, 100);
+    line(xPos - 1, yPos, xPos, height - inByte);
+    yPos = height - inByte;
+
+    if (xPos >= width) {
+      xPos = 1;
+      background(0);
+    } else {
+      xPos++;
+    }
   }
 }
 
